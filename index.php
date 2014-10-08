@@ -12,15 +12,18 @@ $app = new \Slim\Slim();
 
 $app->get('/users', 'getUsers');
 $app->get('/users/:id',    'getUser');
+$app->get('/users/location/:id',    'getLocation');
 $app->get('/users/search/:query', 'findByName');
 $app->post('/users', 'addUser');
 $app->put('/users/:id', 'updateUser');
+$app->put('/users/location/:id', 'updateLocation');
 $app->delete('/users/:id',    'deleteUser');
+
 
 $app->run();
 
 function getUsers() {
-    $sql_query = "select `name`,`email`,`date`,`ip` FROM restAPI ORDER BY name";
+    $sql_query = "SELECT `name`,`id`,`email`,`date`,`ip`,`lastlocation` FROM restAPI ORDER BY name";
     try {
         $dbCon = getConnection();
         $stmt   = $dbCon->query($sql_query);
@@ -34,8 +37,10 @@ function getUsers() {
     
 }
 
+
+
 function getUser($id) {
-    $sql = "SELECT `name`,`email`,`date`,`ip` FROM restAPI WHERE id=:id";
+    $sql = "SELECT `name`,`email`,`date`,`ip`, `lastlocation` FROM restAPI WHERE id=:id";
     try {
         $dbCon = getConnection();
         $stmt = $dbCon->prepare($sql);  
@@ -48,6 +53,22 @@ function getUser($id) {
         echo '{"error":{"text":'. $e->getMessage() .'}}'; 
     }
 }
+
+function getLocation($id) {
+    $sql = "SELECT `lastlocation` FROM restAPI WHERE id=:id";
+    try {
+        $dbCon = getConnection();
+        $stmt = $dbCon->prepare($sql);  
+        $stmt->bindParam("id", $id);
+        $stmt->execute();
+        $user = $stmt->fetchObject();  
+        $dbCon = null;
+        echo json_encode($user); 
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+    }
+}
+
 
 function addUser() {
     global $app;
@@ -92,6 +113,27 @@ function updateUser($id) {
         echo '{"error":{"text":'. $e->getMessage() .'}}'; 
     }
 }
+
+function updateLocation($id) {
+    global $app;
+    $req = $app->request();
+    $paramLocation = $req->params('lastlocation');
+    
+    $sql = "UPDATE restAPI SET lastlocation=:lastlocation WHERE id=:id";
+    try {
+        $dbCon = getConnection();
+        $stmt = $dbCon->prepare($sql);  
+        $stmt->bindParam("lastlocation", $paramLocation);
+        $stmt->bindParam("id", $id);
+        $status->status = $stmt->execute();
+        
+        $dbCon = null;
+        echo json_encode($status); 
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+    }
+}
+
 
 function deleteUser($id) {
     $sql = "DELETE FROM restAPI WHERE id=:id";
