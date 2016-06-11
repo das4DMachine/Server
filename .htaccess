@@ -1,6 +1,8 @@
+Header add "disablevcache" "true"
+
 RewriteEngine On
  
-RewriteBase /pvc
+RewriteBase /3dserver
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [QSA,L]

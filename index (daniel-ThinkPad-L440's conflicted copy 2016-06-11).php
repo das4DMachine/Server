@@ -16,7 +16,7 @@ $app->get('/towers', 'getTowers');
 $app->post('/towers', 'addKlods');
 $app->put('/updaterfid/', 'updateKlods');
 $app->put('/updatestack/', 'stack');
-$app->delete('/towers/',    'deleteKlods');
+$app->delete('/towers/',    'deleteTower');
 
 
 $app->run();
@@ -117,7 +117,7 @@ function stack() {
 }
 
 
-function deleteKlods() {
+function deleteTower() {
     global $app;
     $request = $app->request();
     $id = $request->params('klods_id');
@@ -128,6 +128,7 @@ function deleteKlods() {
         $dbCon = getConnection();
         $stmt = $dbCon->prepare($sql);
         $stmt->bindParam("id", $id);
+
         $status = $stmt->execute();
         $dbCon = null;
         echo json_encode($status);
