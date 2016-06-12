@@ -17,6 +17,9 @@ $app->post('/towers', 'addKlods');
 $app->put('/updaterfid/', 'updateKlods');
 $app->put('/updatestack/', 'stack');
 $app->delete('/towers/',    'deleteKlods');
+$app->post('/arduino/stack/', 'arduinoStack');
+$app->post('/arduino/unstack/', 'arduinoUnStack');
+
 
 
 $app->run();
@@ -136,21 +139,67 @@ function deleteKlods() {
     }
 }
 
-function findByName($query) {
-    $sql = "SELECT * FROM restAPI WHERE UPPER(name) LIKE :query ORDER BY name";
+/**
+ * Used for stacking by the arfuino.
+ * Can look op 'klodser' from their rfid_id and stack their id accordingly
+ *
+ * Inspired by the struture found here: https://secure.php.net/manual/en/mysqli.prepare.php
+ */
+function arduinoStack() {
+
+    global $app;
+    $request = $app->request();
+    $klods_id = $request->params('klods_id');
+    $stacked_rfid = $request->params('stacked_rfid');
+
+
+    $sql = "SELECT klods_id FROM towers WHERE rfid_id=:id";
     try {
-        $dbCon = getConnection();
-        $stmt = $dbCon->prepare($sql);
-        $query = "%".$query."%";
-        $stmt->bindParam("query", $query);
-        $stmt->execute();
-        $users = $stmt->fetchAll(PDO::FETCH_OBJ);
-        $dbCon = null;
-        echo '{"user": ' . json_encode($users) . '}';
+        $dbconnection = getConnection();
+        $statement = $dbconnection->prepare($sql);
+        $statement->bindParam('id', $stacked_rfid);
+        $status = $statement->execute();
+        $resultarray = $statement->fetch();
+        $stacked_id = $resultarray[0];
+
+        $sql = "UPDATE towers SET stacked_id=:stacked_id WHERE klods_id=:klods_id";
+        $statement = $dbconnection->prepare($sql);
+        $statement->bindParam("stacked_id", $stacked_id);
+        $statement->bindParam("klods_id", $klods_id);
+        $status = $statement->execute();
+
+        $dbconnection = null;
+        echo json_encode($status);
+
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 }
+
+/**
+ * Used for the arduino to unstack itself
+ */
+function arduinoUnStack() {
+
+    global $app;
+    $request = $app->request();
+    $klods_id = $request->params('klods_id');
+
+    $sql = "UPDATE towers SET stacked_id = 0 WHERE klods_id=:klods_id ";
+
+    try {
+        $dbconnection = getConnection();
+        $statement = $dbconnection->prepare($sql);
+        $statement->bindParam('klods_id', $klods_id);
+        $status = $statement->execute();
+
+
+        echo json_encode($status);
+    } catch(PDOException $e) {
+    }
+
+}
+
 
 function getConnection() {
     try {
