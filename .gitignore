@@ -1,4 +1,4 @@
-userdetails.php # contains passwords supposed to be supplied by the user
+userdetails.* # contains passwords supposed to be supplied by the user
 
 
 
