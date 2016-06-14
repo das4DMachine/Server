@@ -1,16 +1,14 @@
-Wub Wub...
+Just another RESTful webserver based on SLIM for a prototype. This one is made for use in a project in the course 3D interaktion on Aarhus University.
 
-This is a server based on the slim framework: http://www.slimframework.com/
+Apart from the webserver there are also som HTML files with simple forms that supply different functionalities for the prototype and server.
 
-Its made for an android game (read pretty basic and crappy android game) which can be found under the name PvC-app
-
-Both is developed for the couses Interaktive Medier and Pervasive Computing on Aarhus University...
-
-Props til slim for det lækre framework....
+Note to self: one should provide the file userdetails.php comtainign the following constants for the DB connection to work:
 
 
-Over and out....
-
-
-
+```php
+const PASSWORD = "PASSWORD";
+const USERNAME = "USERNAME";
+const NAME = "DB_NAME";
+const HOST = "HOST_NAME";
+```
 
