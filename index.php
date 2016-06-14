@@ -19,7 +19,8 @@ $app->put('/updatestack/', 'stack');
 $app->delete('/towers/',    'deleteKlods');
 $app->post('/arduino/stack/', 'arduinoStack');
 $app->post('/arduino/unstack/', 'arduinoUnStack');
-
+$app->post('/wizardoz/', 'wizardStack');
+$app->post('/wizardunstack/', 'wizardUnStack');
 
 
 $app->run();
@@ -175,6 +176,65 @@ function arduinoStack() {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 }
+
+
+function wizardStack() {
+    global $app;
+    $req = $app->request();
+    $klods_ID = $req->params('klods_id');
+    $stacked_ID = $req->params('stacked_id');
+
+    $sql = "UPDATE towers SET stacked_id=:stacked_id WHERE klods_id=:klods_id";
+    try {
+        $dbCon = getConnection();
+        $stmt = $dbCon->prepare($sql);
+        $stmt->bindParam("stacked_id", $stacked_ID);
+        $stmt->bindParam("klods_id", $klods_ID);
+        $status = $stmt->execute();
+
+        $dbCon = null;
+
+        header("Location: http://graungaard.com/3dserver/wizard.html"); // Make sure that the client never leaves - The quickkest hack i could figure out to avoid javascript in the client code
+        die();
+
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+
+
+
+}
+
+
+
+
+function wizardUnStack() {
+
+    global $app;
+    $request = $app->request();
+    $klods_id = $request->params('klods_id');
+
+    $sql = "UPDATE towers SET stacked_id = 0 WHERE klods_id=:klods_id ";
+
+    try {
+        $dbconnection = getConnection();
+        $statement = $dbconnection->prepare($sql);
+        $statement->bindParam('klods_id', $klods_id);
+        $status = $statement->execute();
+
+
+        header("Location: http://graungaard.com/3dserver/wizard.html"); // Make sure that the client never leaves - The quickkest hack i could figure out to avoid javascript in the client code
+        die();
+
+    } catch(PDOException $e) {
+    }
+
+}
+
+
+
 
 /**
  * Used for the arduino to unstack itself
